@@ -1,6 +1,5 @@
 /**
  * InfectStatistic
- * TODO
  *
  * @author xxx
  * @version xxx
