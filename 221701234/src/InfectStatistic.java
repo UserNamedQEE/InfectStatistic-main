@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -80,6 +82,7 @@ class InfectStatistic {
                         filelist.add(file2);
                     }
                 }
+                //用户指定日期
                 else
                 {
                     String templog=log_Path+"\\"+date+".log.txt";
@@ -91,12 +94,36 @@ class InfectStatistic {
                         }
                     }
                 }
-                System.out.println(filelist);
             }
             else
             {
                 System.out.println("您输入的日志文件路径有误");
                 return;
+            }
+
+
+            //实现从日志文件中获取数据
+            for(File file2:filelist)
+            {
+                try
+                {
+                    BufferedReader br=new BufferedReader(new FileReader(file2));
+                    String line="";
+                    while((line=br.readLine())!=null&&line.charAt(0)!='/')
+                    {
+                        String [] ss=line.split(" ");
+                        for(String s:ss)
+                        {
+                            System.out.print(s);
+                        }
+                        System.out.println();
+                    }
+                    br.close();
+                }
+                catch(Exception e)
+                {
+                    System.out.println(e.getMessage());
+                }
             }
         }
     }
