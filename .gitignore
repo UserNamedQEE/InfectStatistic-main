@@ -11,3 +11,4 @@ gen
 InfectStatistic-example.iml
 221701234/.classpath
 221701234/.project
+*.class
