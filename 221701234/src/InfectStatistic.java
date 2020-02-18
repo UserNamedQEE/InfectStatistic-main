@@ -77,6 +77,13 @@ class InfectStatistic {
                     } 
                 }
             }
+
+            //判断是否输入相关路径
+            if(log_Path.length()==0||out_Path=="")
+            {
+                System.out.println("输入的命令缺少必要参数");
+                return;
+            }
             
             //用于统计全国的数据
             int ip,sp,cure,dead;
