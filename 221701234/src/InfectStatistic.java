@@ -1,12 +1,20 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.nio.charset.StandardCharsets;
+
 
 class InfectStatistic {
     public static void main(String[] args) 
@@ -72,7 +80,6 @@ class InfectStatistic {
                 }
             }
             
-
             //用于统计全国的数据
             int ip,sp,cure,dead;
             ip=0;
@@ -140,21 +147,24 @@ class InfectStatistic {
             {
                 try
                 {
-                    BufferedReader br=new BufferedReader(new FileReader(file2));
+                    InputStream fr=new FileInputStream(file2.getAbsolutePath());
+                    BufferedReader br=new BufferedReader(new InputStreamReader(fr,StandardCharsets.UTF_8));
                     String line="";
                     while((line=br.readLine())!=null&&line.charAt(0)!='/')
                     {
                         String [] ss=line.split(" ");
                         int num=0;
-                        try
+                        String Num="";
+                        String numStr=ss[ss.length-1];
+                        numStr=numStr.trim();
+                        for(int i=0;i<numStr.length();++i)
                         {
-                            String Num=ss[ss.length-1].split("人")[0];
-                            num=Integer.parseInt(Num);
+                            if(numStr.charAt(i)>=48&&numStr.charAt(i)<=57)
+                            {
+                                Num+=numStr.charAt(i);
+                            }
                         }
-                        catch(Exception e)
-                        {
-                            System.out.println(e.getMessage());
-                        }
+                        num=Integer.parseInt(Num);
                         if(line.contains("新增"))
                         {
                             //未指定省份时自己添加
@@ -299,8 +309,8 @@ class InfectStatistic {
                 }
 
                 //覆盖原有内容
-                FileWriter writer=new FileWriter(outFile);
-
+                FileOutputStream os=new FileOutputStream(out_Path);
+                BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(os,StandardCharsets.UTF_8));
                 //未指定省份地区时
                 if(province.size()==0)
                 {
