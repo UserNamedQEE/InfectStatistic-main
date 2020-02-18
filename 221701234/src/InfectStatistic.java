@@ -79,7 +79,7 @@ class InfectStatistic {
             }
 
             //判断是否输入相关路径
-            if(log_Path.length()==0||out_Path=="")
+            if(log_Path.length()==0||out_Path.length()==0)
             {
                 System.out.println("输入的命令缺少必要参数");
                 return;
