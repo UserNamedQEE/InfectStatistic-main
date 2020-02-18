@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+
 class InfectStatistic {
     public static void main(String[] args) 
     {
@@ -120,7 +121,7 @@ class InfectStatistic {
                     String templog=log_Path+"\\"+date+".log.txt";
                     for(File file2:file.listFiles())
                     {
-                        if(file2.getAbsolutePath().compareTo(templog)<0)
+                        if(file2.getAbsolutePath().compareTo(templog)<=0)
                         {
                             filelist.add(file2);
                         }
@@ -144,9 +145,23 @@ class InfectStatistic {
                     while((line=br.readLine())!=null&&line.charAt(0)!='/')
                     {
                         String [] ss=line.split(" ");
-                        int num=Integer.valueOf((ss[ss.length-1].split("人")[0]));
+                        int num=0;
+                        try
+                        {
+                            String Num=ss[ss.length-1].split("人")[0];
+                            num=Integer.parseInt(Num);
+                        }
+                        catch(Exception e)
+                        {
+                            System.out.println(e.getMessage());
+                        }
                         if(line.contains("新增"))
                         {
+                            //未指定省份时自己添加
+                            if(province.size()==0)
+                            {
+                                p_list.put(ss[0], 0);
+                            }
                             if(line.contains("感染患者"))
                             {
                                 ip+=num;
@@ -176,6 +191,11 @@ class InfectStatistic {
                         }
                         else if(line.contains("流入"))
                         {
+                            if(province.size()==0)
+                            {
+                                p_list.put(ss[0], 0);
+                                p_list.put(ss[3], 0);
+                            }
                             if(line.contains("感染患者"))
                             {
                                 //流出省必定已存在，无需判断
@@ -210,7 +230,14 @@ class InfectStatistic {
                         }
                         else if(line.contains("死亡"))
                         {
+                            if(province.size()==0)
+                            {
+                                p_list.put(ss[0], 0);
+                            }
                             dead+=num;
+                            //死亡时感染患者减少
+                            ip-=num;
+                            ip_list.put(ss[0], ip_list.get(ss[0])-num);
                             if(dead_list.containsKey(ss[0]))
                             {
                                 dead_list.put(ss[0], dead_list.get(ss[0])+num);
@@ -222,7 +249,10 @@ class InfectStatistic {
                         }
                         else if(line.contains("治愈"))
                         {
-                            crue+=num;
+                            cure+=num;
+                            //治愈时感染患者减少
+                            ip-=num;
+                            ip_list.put(ss[0], ip_list.get(ss[0])-num);
                             if(cure_list.containsKey(ss[0]))
                             {
                                 cure_list.put(ss[0], cure_list.get(ss[0])+num);
@@ -271,7 +301,39 @@ class InfectStatistic {
                 //覆盖原有内容
                 FileWriter writer=new FileWriter(outFile);
 
-                //判断省份，地区
+                //未指定省份地区时
+                if(province.size()==0)
+                {
+                    writer.write("全国 ");
+                    //未指定统计类型
+                    if(type.size()==0)
+                    {
+                        writer.write("感染患者"+ip+"人 ");
+                        writer.write("疑似患者"+sp+"人 ");
+                        writer.write("治愈"+cure+"人 ");
+                        writer.write("死亡"+dead+"人 ");
+                    }
+                    else
+                    {
+                        if(t_list.containsKey("ip"))
+                        {
+                            writer.write("感染患者"+ip+"人 ");
+                        }
+                        if(t_list.containsKey("sp"))
+                        {
+                            writer.write("疑似患者"+sp+"人 ");
+                        }
+                        if(t_list.containsKey("cure"))
+                        {
+                            writer.write("治愈"+cure+"人 ");
+                        }
+                        if(t_list.containsKey("dead"))
+                        {
+                            System.out.print("死亡"+dead+"人 ");
+                        }
+                    }
+                    writer.write("\n");
+                }
                 Iterator<String> p_iterator=p_list.keySet().iterator();
                 while(p_iterator.hasNext())
                 {
@@ -279,67 +341,76 @@ class InfectStatistic {
                     if(key.equals("全国"))
                     {
                         //未指定统计类型
-                        writer.append("全国 ");
+                        writer.write("全国 ");
                         if(type.size()==0)
                         {
-                            writer.append("感染患者"+ip+"人 ");
-                            writer.append("疑似患者"+sp+"人 ");
-                            writer.append("治愈"+cure+"人 ");
-                            writer.append("死亡"+dead+"人 ");
+                            writer.write("感染患者"+ip+"人 ");
+                            writer.write("疑似患者"+sp+"人 ");
+                            writer.write("治愈"+cure+"人 ");
+                            writer.write("死亡"+dead+"人 ");
                         }
                         else
                         {
                             if(t_list.containsKey("ip"))
                             {
-                                writer.append("感染患者"+ip+"人 ");
+                                writer.write("感染患者"+ip+"人 ");
                             }
                             if(t_list.containsKey("sp"))
                             {
-                                writer.append("疑似患者"+sp+"人 ");
+                                writer.write("疑似患者"+sp+"人 ");
                             }
                             if(t_list.containsKey("cure"))
                             {
-                                writer.append("治愈"+cure+"人 ");
+                                writer.write("治愈"+cure+"人 ");
                             }
                             if(t_list.containsKey("dead"))
                             {
                                 System.out.print("死亡"+dead+"人 ");
                             }
                         }
-                        writer.append("\n");
+                        writer.write("\n");
                     }
                     //其余都为省份名
                     else
                     {
+                            
+                        if(!cure_list.containsKey(key))
+                        {
+                            cure_list.put(key, 0);
+                        }
+                        if(!dead_list.containsKey(key))
+                        {
+                            dead_list.put(key, 0);
+                        }
+                        writer.write(key+" ");
                         //未指定统计类型
-                        writer.append(key+" ");
                         if(type.size()==0)
                         {
-                            writer.append("感染患者"+ip_list.get(key)+"人 ");
-                            writer.append("疑似患者"+sp_list.get(key)+"人 ");
-                            writer.append("治愈"+cure_list.get(key)+"人 ");
-                            writer.append("死亡"+dead_list.get(key)+"人 ");
+                                writer.write("感染患者"+ip_list.get(key)+"人 ");
+                                writer.write("疑似患者"+sp_list.get(key)+"人 ");
+                                writer.write("治愈"+cure_list.get(key)+"人 ");
+                                writer.write("死亡"+dead_list.get(key)+"人 ");
                         }
                         else
                         {
                             if(t_list.containsKey("ip"))
                             {
-                                writer.append("感染患者"+ip_list.get(key)+"人 ");
+                                writer.write("感染患者"+ip_list.get(key)+"人 ");
                             }
                             if(t_list.containsKey("sp"))
                             {
-                                writer.append("疑似患者"+sp_list.get(key)+"人 ");
+                                writer.write("疑似患者"+sp_list.get(key)+"人 ");
                             }
                             if(t_list.containsKey("cure"))
                             {
-                                writer.append("治愈"+cure_list.get(key)+"人 ");
+                                writer.write("治愈"+cure_list.get(key)+"人 ");
                             }
                             if(t_list.containsKey("dead"))
                             {
-                                writer.append("死亡"+dead_list.get(key)+"人 ");
+                                writer.write("死亡"+dead_list.get(key)+"人 ");
                             }
                         }
-                        writer.append("\n");
+                        writer.write("\n");
                     }
                 }
                 writer.flush();
